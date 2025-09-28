@@ -5,7 +5,7 @@
             "name":"Launch",
             "type": "cppvsdbg",
             "request": "launch",
-            "program":"${workspaceRoot}/cloneste",
+            "program":"${workspaceRoot}/cloneste.exe",
             "args":[],
             "cwd":"${workspaceFolder}",
             "console":"integratedTerminal"

@@ -70,7 +70,10 @@ bool platform_create_window(int width, int height, char* title)
     wc.hIcon = LoadIcon(instance, IDI_APPLICATION);
     wc.hCursor = LoadCursor(NULL, IDC_ARROW);       // This means we decide the look of the cursor
     wc.lpszClassName = title;                       // This is not the title, just a unique identifier
-    wc.lpfnWndProc = windows_window_callback;                // callback for input into the window
+    // lpfwnWndProc-> long pointer to the window procedure function which is a callback for input into the window, 
+    // meaning that Mouse events, keyboard events, resizing
+    // etc all use this callback. Which is why we will define our own, the default is windows_window_callback
+    wc.lpfnWndProc = windows_window_callback;                
 
     if(!RegisterClassA(&wc))
     {
@@ -80,6 +83,7 @@ bool platform_create_window(int width, int height, char* title)
     // Now that we have an instance and have registered a windows class with Windows 
     // we need to create the actual window
 
+    // WS_OVERLAPPEDWINDOW combines the most common styles into one call
     // WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX
     int dwStyle = WS_OVERLAPPEDWINDOW;
 
@@ -101,7 +105,7 @@ bool platform_create_window(int width, int height, char* title)
         return false;
     }
 
-    ShowWindow(window, SW_SHOW);
+ 
 
     return true;
 

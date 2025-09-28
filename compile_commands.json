@@ -1,0 +1,15 @@
+[
+	{
+		"directory": "G:/dev/game_dev/Cloneste",
+		"arguments": [	"G:/dev_tools/LLVM/bin/clang.exe",
+						"-Wno-unused-includes",
+						"-Wno-writable-strings",
+                        "-Wno-format-security",
+						"-std=c++23",
+						"-IG:/dev/game_dev/Cloneste/src", 
+						"-IC:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/um",
+						"-o", "Cloneste.exe"],
+		"file": "src/main.cpp"
+	}
+
+]
