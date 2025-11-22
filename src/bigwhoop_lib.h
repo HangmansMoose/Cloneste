@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdio>
+
 // This is to get malloc
 #include <cstdlib>
 
@@ -15,6 +16,7 @@
 //                           Defines
 // #############################################################################
 
+// This causes a breakpoint to occur dynamically (ie when an assertion is not met)
 #ifdef _WIN32
 #define DEBUG_BREAK() __debugbreak()
 #define EXPORT_FN __declspec(dllexport)
@@ -25,6 +27,13 @@
 #define DEBUG_BREAK() __builtin_trap()
 #define EXPORT_FN
 #endif
+
+// Simple bit shifting function
+#define BIT(x) 1 << (x)
+#define KB(x) ((unsigned long long)1024 * x)
+#define MB(x) ((unsigned long long)1024 * KB(x))
+#define GB(x) ((unsigned long long)1024 * MB(x))
+
 
 // #############################################################################
 //                           Logging
@@ -84,17 +93,17 @@ void _log(char* prefix, char* msg, TextColor textColor, Args... args)
   puts(textBuffer);
 }
 
-#define SM_TRACE(msg, ...) _log("TRACE: ", msg, TEXT_COLOR_GREEN, ##__VA_ARGS__);
-#define SM_WARN(msg, ...) _log("WARN: ", msg, TEXT_COLOR_YELLOW, ##__VA_ARGS__);
-#define SM_ERROR(msg, ...) _log("ERROR: ", msg, TEXT_COLOR_RED, ##__VA_ARGS__);
+#define BW_TRACE(msg, ...) _log("TRACE: ", msg, TEXT_COLOR_GREEN, ##__VA_ARGS__);
+#define BW_WARN(msg, ...) _log("WARN: ", msg, TEXT_COLOR_YELLOW, ##__VA_ARGS__);
+#define BW_ERROR(msg, ...) _log("ERROR: ", msg, TEXT_COLOR_RED, ##__VA_ARGS__);
 
-#define SM_ASSERT(x, msg, ...)    \
+#define BW_ASSERT(x, msg, ...)    \
 {                                 \
   if(!(x))                        \
   {                               \
-    SM_ERROR(msg, ##__VA_ARGS__); \
+    BW_ERROR(msg, ##__VA_ARGS__); \
     DEBUG_BREAK();                \
-    SM_ERROR("Assertion HIT!")    \
+    BW_ERROR("Assertion HIT!")    \
   }                               \
 }
 
@@ -111,22 +120,22 @@ struct Array
 
   T& operator[](int idx)
   {
-    SM_ASSERT(idx >= 0, "idx negative!");
-    SM_ASSERT(idx < count, "Idx out of bounds!");
+    BW_ASSERT(idx >= 0, "idx negative!");
+    BW_ASSERT(idx < count, "Idx out of bounds!");
     return elements[idx];
   }
 
   int add(T element)
   {
-    SM_ASSERT(count < maxElements, "Array Full!");
+    BW_ASSERT(count < maxElements, "Array Full!");
     elements[count] = element;
     return count++;
   }
 
   void remove_idx_and_swap(int idx)
   {
-    SM_ASSERT(idx >= 0, "idx negative!");
-    SM_ASSERT(idx < count, "idx out of bounds!");
+    BW_ASSERT(idx >= 0, "idx negative!");
+    BW_ASSERT(idx < count, "idx out of bounds!");
     elements[idx] = elements[--count];
   }
 
@@ -142,22 +151,25 @@ struct Array
 };
 
 // #############################################################################
-//                           Bump Allocator
+//                           Arena Allocator
 // #############################################################################
 
 // A bump allocator is an implementation of an arena, also referred to as a linear allocator.
 // It works by pre-allocating a large block of memory and allocates regions from it simply
 // by 'bumping' a pointer forward, rather than allocating and deallocating
-struct BumpAllocator
+//
+// NOTE: I prefer the "Arena" terminology so that is what I will be using 
+
+struct ArenaAllocator
 {
   size_t capacity;
   size_t used;
   char* memory;
 };
 
-BumpAllocator make_bump_allocator(size_t size)
+ArenaAllocator make_arena_allocator(size_t size)
 {
-  BumpAllocator ba = {};
+  ArenaAllocator ba = {};
   
   ba.memory = (char*)malloc(size);
   if(ba.memory)
@@ -167,13 +179,13 @@ BumpAllocator make_bump_allocator(size_t size)
   }
   else
   {
-    SM_ASSERT(false, "Failed to allocate Memory!");
+    BW_ASSERT(false, "Failed to allocate Memory!");
   }
 
   return ba;
 }
 
-char* bump_alloc(BumpAllocator* bumpAllocator, size_t size)
+char* arena_alloc(ArenaAllocator* bumpAllocator, size_t size)
 {
   char* result = nullptr;
 
@@ -186,7 +198,7 @@ char* bump_alloc(BumpAllocator* bumpAllocator, size_t size)
   }
   else
   {
-    SM_ASSERT(false, "BumpAllocator is full");
+    BW_ASSERT(false, "ArenaAllocator is full");
   }
 
   return result;
@@ -221,7 +233,7 @@ long long get_timestamp(char* file)
 // Proves a file exists by attempting to open it
 bool file_exists(char* filePath)
 {
-  SM_ASSERT(filePath, "No filePath supplied!");
+  BW_ASSERT(filePath, "No filePath supplied!");
 
   auto file = std::fopen(filePath, "rb");
   if(!file)
@@ -235,14 +247,14 @@ bool file_exists(char* filePath)
 
 long get_file_size(const char* filePath)
 {
-    SM_ASSERT(filePath, "No filePath supplied!");
+    BW_ASSERT(filePath, "No filePath supplied!");
 
     long fileSize = 0;
     auto file = std::fopen(filePath, "rb");
 
     if(!file)
     {
-        SM_ERROR("Failed opening file: %s", filePath);
+        BW_ERROR("Failed opening file: %s", filePath);
         return false;
     }
     
@@ -264,15 +276,15 @@ long get_file_size(const char* filePath)
 */
 char* read_file(const char* filePath, int* fileSize, char* buffer)
 {
-  SM_ASSERT(filePath, "No filePath supplied!");
-  SM_ASSERT(fileSize, "No fileSize supplied!");
-  SM_ASSERT(buffer, "No buffer supplied!");
+  BW_ASSERT(filePath, "No filePath supplied!");
+  BW_ASSERT(fileSize, "No fileSize supplied!");
+  BW_ASSERT(buffer, "No buffer supplied!");
 
   *fileSize = 0;
   auto file = fopen(filePath, "rb");
   if(!file)
   {
-    SM_ERROR("Failed opening File: %s", filePath);
+    BW_ERROR("Failed opening File: %s", filePath);
     return nullptr;
   }
 
@@ -288,14 +300,14 @@ char* read_file(const char* filePath, int* fileSize, char* buffer)
   return buffer;
 }
 
-char* read_file(const char* filePath, int* fileSize, BumpAllocator* bumpAllocator)
+char* read_file(const char* filePath, int* fileSize, ArenaAllocator* bumpAllocator)
 {
   char* file = nullptr;
   long fileSize2 = get_file_size(filePath);
 
   if(fileSize2)
   {
-    char* buffer = bump_alloc(bumpAllocator, fileSize2 + 1);
+    char* buffer = arena_alloc(bumpAllocator, fileSize2 + 1);
 
     file = read_file(filePath, fileSize, buffer);
   }
@@ -305,12 +317,12 @@ char* read_file(const char* filePath, int* fileSize, BumpAllocator* bumpAllocato
 
 void write_file(const char* filePath, char* buffer, int size)
 {
-  SM_ASSERT(filePath, "No filePath supplied!");
-  SM_ASSERT(buffer, "No buffer supplied!");
+  BW_ASSERT(filePath, "No filePath supplied!");
+  BW_ASSERT(buffer, "No buffer supplied!");
   auto file = fopen(filePath, "wb");
   if(!file)
   {
-    SM_ERROR("Failed opening File: %s", filePath);
+    BW_ERROR("Failed opening File: %s", filePath);
     return;
   }
 
@@ -326,14 +338,14 @@ bool copy_file(const char* fileName, const char* outputName, char* buffer)
   auto outputFile = fopen(outputName, "wb");
   if(!outputFile)
   {
-    SM_ERROR("Failed opening File: %s", outputName);
+    BW_ERROR("Failed opening File: %s", outputName);
     return false;
   }
 
   int result = fwrite(data, sizeof(char), fileSize, outputFile);
   if(!result)
   {
-    SM_ERROR("Failed opening File: %s", outputName);
+    BW_ERROR("Failed opening File: %s", outputName);
     return false;
   }
   
@@ -342,14 +354,14 @@ bool copy_file(const char* fileName, const char* outputName, char* buffer)
   return true;
 }
 
-bool copy_file(const char* fileName, const char* outputName, BumpAllocator* bumpAllocator)
+bool copy_file(const char* fileName, const char* outputName, ArenaAllocator* bumpAllocator)
 {
   char* file = 0;
   long fileSize2 = get_file_size(fileName);
 
   if(fileSize2)
   {
-    char* buffer = bump_alloc(bumpAllocator, fileSize2 + 1);
+    char* buffer = arena_alloc(bumpAllocator, fileSize2 + 1);
 
     return copy_file(fileName, outputName, buffer);
   }
