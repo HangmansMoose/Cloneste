@@ -1,4 +1,5 @@
-#pragma once
+#ifndef BIGWHOOP_LIB_H
+#define BIGWHOOP_LIB_H
 
 #include <cstdio>
 
@@ -169,32 +170,32 @@ struct ArenaAllocator
 
 ArenaAllocator make_arena_allocator(size_t size)
 {
-  ArenaAllocator ba = {};
+  ArenaAllocator arena = {};
   
-  ba.memory = (char*)malloc(size);
-  if(ba.memory)
+  arena.memory = (char*)malloc(size);
+  if(arena.memory)
   {
-    ba.capacity = size;
-    memset(ba.memory, 0, size); // Sets the memory to 0
+    arena.capacity = size;
+    memset(arena.memory, 0, size); // Sets the memory to 0
   }
   else
   {
     BW_ASSERT(false, "Failed to allocate Memory!");
   }
 
-  return ba;
+  return arena;
 }
 
-char* arena_alloc(ArenaAllocator* bumpAllocator, size_t size)
+char* arena_alloc(ArenaAllocator* arenaAllocator, size_t size)
 {
   char* result = nullptr;
 
   // The aligned size is logically AND'd with NOT 7
   size_t allignedSize = (size + 7) & ~ 7; // This makes sure the first 4 bits are 0 
-  if(bumpAllocator->used + allignedSize <= bumpAllocator->capacity)
+  if(arenaAllocator->used + allignedSize <= arenaAllocator->capacity)
   {
-    result = bumpAllocator->memory + bumpAllocator->used;
-    bumpAllocator->used += allignedSize;
+    result = arenaAllocator->memory + arenaAllocator->used;
+    arenaAllocator->used += allignedSize;
   }
   else
   {
@@ -225,7 +226,7 @@ long long get_timestamp(char* file)
         time_t         st_mtime;    // Time of last data modification
         time_t         st_ctime;    // Time of last status change
     };*/ 
-  struct stat file_stat = {};
+  struct stat file_stat = {0};
   stat(file, &file_stat);
   return file_stat.st_mtime;
 }
@@ -300,14 +301,20 @@ char* read_file(const char* filePath, int* fileSize, char* buffer)
   return buffer;
 }
 
-char* read_file(const char* filePath, int* fileSize, ArenaAllocator* bumpAllocator)
+/*
+ * This is the alternate form of the read_file function that takes in the arena allocator that 
+ * we have defined and uses that to create the buffer to read the file into within our pre-defined
+ * arena, then calls the read_file function that actually reads the file and passes it the created
+ * buffer
+ * */
+char* read_file(const char* filePath, int* fileSize, ArenaAllocator* arenaAllocator)
 {
   char* file = nullptr;
   long fileSize2 = get_file_size(filePath);
 
   if(fileSize2)
   {
-    char* buffer = arena_alloc(bumpAllocator, fileSize2 + 1);
+    char* buffer = arena_alloc(arenaAllocator, fileSize2 + 1);
 
     file = read_file(filePath, fileSize, buffer);
   }
@@ -317,18 +324,27 @@ char* read_file(const char* filePath, int* fileSize, ArenaAllocator* bumpAllocat
 
 void write_file(const char* filePath, char* buffer, int size)
 {
-  BW_ASSERT(filePath, "No filePath supplied!");
-  BW_ASSERT(buffer, "No buffer supplied!");
-  auto file = fopen(filePath, "wb");
-  if(!file)
-  {
-    BW_ERROR("Failed opening File: %s", filePath);
-    return;
-  }
+    BW_ASSERT(filePath, "No filePath supplied!");
+    BW_ASSERT(buffer, "No buffer supplied!");
+    BW_ASSERT(size, "No file size!");
 
-  fwrite(buffer, sizeof(char), size, file);
-  fclose(file);
+    auto file = fopen(filePath, "wb");
+    if(!file)
+    {
+      BW_ERROR("Failed opening File: %s", filePath);
+      return;
+    }
+
+    fwrite(buffer, sizeof(char), size, file);
+    fclose(file);
 }
+
+/*
+ * copy-file uses the same paradigm as read-file wherein there are two functions
+ * of that name with different signatures. One is called and passed the arena allocator
+ * and uses the arena to allocate a buffer, then calls the other form of the function that
+ * takes in the buffer and copies into it.
+ * */
 
 bool copy_file(const char* fileName, const char* outputName, char* buffer)
 {
@@ -354,14 +370,14 @@ bool copy_file(const char* fileName, const char* outputName, char* buffer)
   return true;
 }
 
-bool copy_file(const char* fileName, const char* outputName, ArenaAllocator* bumpAllocator)
+bool copy_file(const char* fileName, const char* outputName, ArenaAllocator* arenaAllocator)
 {
   char* file = 0;
   long fileSize2 = get_file_size(fileName);
 
   if(fileSize2)
   {
-    char* buffer = arena_alloc(bumpAllocator, fileSize2 + 1);
+    char* buffer = arena_alloc(arenaAllocator, fileSize2 + 1);
 
     return copy_file(fileName, outputName, buffer);
   }
@@ -379,20 +395,4 @@ bool copy_file(const char* fileName, const char* outputName, ArenaAllocator* bum
 //constexpr Vec4 COLOR_YELLOW = {1.0f, 1.0f, 0.0f, 1.0f};
 //constexpr Vec4 COLOR_BLACK = {0.0f, 0.0f, 0.0f, 1.0};
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#endif 

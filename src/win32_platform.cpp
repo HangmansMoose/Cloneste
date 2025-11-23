@@ -1,7 +1,7 @@
 #include "platform.h"
 #include "bigwhoop_lib.h"
 
-#define WIN31_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 #include <windows.h>
 
@@ -77,14 +77,14 @@ bool platform_create_window(int width, int height, char* title)
 
         if(window == NULL)
         {
-          SM_ASSERT(false, "Failed to create Windows Window");
+          BW_ASSERT(false, "Failed to create Windows Window");
           return false;
         }
 
         HDC fakeDC = GetDC(window);
         if(!fakeDC)
         {
-          SM_ASSERT(false, "Failed to get HDC");
+          BW_ASSERT(false, "Failed to get HDC");
           return false;
         }
 
@@ -100,13 +100,13 @@ bool platform_create_window(int width, int height, char* title)
         int pixelFormat = ChoosePixelFormat(fakeDC, &pfd);
         if(!pixelFormat)
         {
-          SM_ASSERT(false, "Failed to choose pixel Format");
+          BW_ASSERT(false, "Failed to choose pixel Format");
           return false;
         }
 
         if(!SetPixelFormat(fakeDC, pixelFormat, &pfd))
         {
-          SM_ASSERT(false, "Failed to set pixel format");
+          BW_ASSERT(false, "Failed to set pixel format");
           return false;
         }
 
@@ -114,13 +114,13 @@ bool platform_create_window(int width, int height, char* title)
         HGLRC fakeRC = wglCreateContext(fakeDC);
         if(!fakeRC)
         {
-          SM_ASSERT(false, "Failed to create Render context");
+          BW_ASSERT(false, "Failed to create Render context");
           return false;
         }
 
         if(!wglMakeCurrent(fakeDC, fakeRC))
         {
-          SM_ASSERT(false, "Failed to make current");
+          BW_ASSERT(false, "Failed to make current");
           return false;
         }
 
@@ -131,7 +131,7 @@ bool platform_create_window(int width, int height, char* title)
 
         if(!wglCreateContextAttribsARB || !wglChoosePixelFormatARB)
         {
-          SM_ASSERT(false, "Failed to load OpenGL functions");
+          BW_ASSERT(false, "Failed to load OpenGL functions");
           return false;
         }
 
@@ -170,14 +170,14 @@ bool platform_create_window(int width, int height, char* title)
 
         if(window == NULL)
         {
-          SM_ASSERT(false, "Failed to create Windows Window");
+          BW_ASSERT(false, "Failed to create Windows Window");
           return false;
         }
 
         dc = GetDC(window);
         if(!dc)
         {
-          SM_ASSERT(false, "Failed to get DC");
+          BW_ASSERT(false, "Failed to get DC");
           return false;
         }
 
@@ -203,7 +203,7 @@ bool platform_create_window(int width, int height, char* title)
                                     &pixelFormat,
                                     &numPixelFormats))
         {
-          SM_ASSERT(0, "Failed to wglChoosePixelFormatARB");
+          BW_ASSERT(0, "Failed to wglChoosePixelFormatARB");
           return false;
         }
 
@@ -212,7 +212,7 @@ bool platform_create_window(int width, int height, char* title)
 
         if(!SetPixelFormat(dc, pixelFormat, &pfd))
         {
-          SM_ASSERT(0, "Failed to SetPixelFormat");
+          BW_ASSERT(0, "Failed to SetPixelFormat");
           return true;
         }
 
@@ -230,13 +230,13 @@ bool platform_create_window(int width, int height, char* title)
         HGLRC rc = wglCreateContextAttribsARB(dc, 0, contextAttribs);
         if(!rc)
         {
-          SM_ASSERT(0, "Failed to crate Render Context for OpenGL");
+          BW_ASSERT(0, "Failed to crate Render Context for OpenGL");
           return false;
         }
 
         if(!wglMakeCurrent(dc, rc))
         {
-          SM_ASSERT(0, "Failed to wglMakeCurrent");
+          BW_ASSERT(0, "Failed to wglMakeCurrent");
           return false;
         }
     }   
@@ -274,7 +274,7 @@ void* platform_load_gl_function(char* funcName)
 
         if(!proc)
         {
-		    SM_ASSERT(false, "Failed to load gl function %s", funcName);
+		    BW_ASSERT(false, "Failed to load gl function %s", funcName);
             return nullptr;
         }
 	}

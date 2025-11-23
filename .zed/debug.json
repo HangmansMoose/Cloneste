@@ -1,0 +1,13 @@
+[
+  {
+    "configurations": [
+      {
+        "label": "Debug Engine",
+        "adapter": "CodeLLDB",
+        "request": "launch",
+        "program": "$ZED_WORKTREE_ROOT/build/cloneste.exe",
+        "cwd": "$ZED_WORKTREE_ROOT"
+      }
+    ]
+  }
+]

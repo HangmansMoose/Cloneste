@@ -1,5 +1,9 @@
 #include "gl_renderer.h"
 
+
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 // #############################################################################
 //                           OpenGL Structs
 // #############################################################################
@@ -23,16 +27,16 @@ static void APIENTRY gl_debug_callback(GLenum source, GLenum type, GLuint id, GL
      severity == GL_DEBUG_SEVERITY_MEDIUM ||
      severity == GL_DEBUG_SEVERITY_HIGH)
   {
-    SM_ASSERT(false, "OpenGL Error: %s", message);
+    BW_ASSERT(false, "OpenGL Error: %s", message);
   }
   else
   {
-    SM_TRACE((char*)message);
+    BW_TRACE((char*)message);
   }
 }
 
 
-bool gl_init(BumpAllocator* transientStorage)
+bool gl_init(ArenaAllocator* transientStorage)
 {
   load_gl_functions();
 
@@ -49,7 +53,7 @@ bool gl_init(BumpAllocator* transientStorage)
 
   if(!vertShader || !fragShader)
   {
-    SM_ASSERT(false, "Failed to load shaders");
+    BW_ASSERT(false, "Failed to load shaders");
     return false;
   }
 
@@ -68,7 +72,7 @@ bool gl_init(BumpAllocator* transientStorage)
     if(!success)
     {
       glGetShaderInfoLog(vertShaderID, 2048, 0, shaderLog);
-      SM_ASSERT(false, "Failed to compile Vertex Shaders %s", shaderLog);
+      BW_ASSERT(false, "Failed to compile Vertex Shaders %s", shaderLog);
     }
   }
 
@@ -81,7 +85,7 @@ bool gl_init(BumpAllocator* transientStorage)
     if(!success)
     {
       glGetShaderInfoLog(fragShaderID, 2048, 0, shaderLog);
-      SM_ASSERT(false, "Failed to compile Vertex Shaders %s", shaderLog);
+      BW_ASSERT(false, "Failed to compile Vertex Shaders %s", shaderLog);
     }
   }
 

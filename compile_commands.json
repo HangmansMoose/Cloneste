@@ -1,0 +1,17 @@
+[
+  {
+    "directory": "G:\\dev\\game_dev\\Cloneste",
+    "file": "src\\gl_renderer.cpp",
+    "command": "clang++ -std=c++23 -Wno-unused-includes -Wno-bugprone-integer-division -Iassets -Iincludes -Isrc -c -o src\\gl_renderer.cpp"
+  },
+  {
+    "directory": "G:\\dev\\game_dev\\Cloneste",
+    "file": "src\\main.cpp",
+    "command": "clang++ -std=c++23 -Wno-unused-includes -Wno-bugprone-integer-division -Iassets -Iincludes -Isrc -c -o src\\main.cpp"
+  },
+  {
+    "directory": "G:\\dev\\game_dev\\Cloneste",
+    "file": "src\\win32_platform.cpp",
+    "command": "clang++ -std=c++23 -Wno-unused-includes -Wno-bugprone-integer-division -Iassets -Iincludes -Isrc -c -o src\\win32_platform.cpp"
+  }
+]

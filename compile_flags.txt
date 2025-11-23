@@ -1,7 +1,0 @@
-clang++.exe
--Wno-unused-includes
--Wno-bugprone-integer-division
--std=c++23
--I./assets
--I./includes
--I./src
